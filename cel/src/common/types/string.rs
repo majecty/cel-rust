@@ -263,8 +263,10 @@ fn string_from_double(this: &CelDouble) -> String<'static> {
     String::from(this.to_string())
 }
 
-fn string_from_bytes(this: &CelBytes<'_>) -> String<'static> {
-    String::from(StdString::from_utf8_lossy(this.inner()).into_owned())
+fn string_from_bytes(this: &CelBytes<'_>) -> Result<String<'static>, ExecutionError> {
+    StdString::from_utf8(this.inner().to_vec())
+        .map(String::from)
+        .map_err(|err| ExecutionError::function_error("string", err))
 }
 
 #[cfg(feature = "chrono")]
@@ -294,7 +296,7 @@ pub(crate) fn stdlib(env: &mut crate::Env) {
         name = "string", id = "uint64_to_string");
     crate::add_overload!(env, fn string_from_double: (CelDouble) -> String,
         name = "string", id = "double_to_string");
-    crate::add_overload!(env, fn string_from_bytes: (CelBytes) -> String,
+    crate::add_overload!(env, fn string_from_bytes: (CelBytes) -> Result<String>,
         name = "string", id = "bytes_to_string");
 
     #[cfg(feature = "chrono")]

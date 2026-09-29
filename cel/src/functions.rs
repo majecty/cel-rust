@@ -580,6 +580,17 @@ mod tests {
     }
 
     #[test]
+    fn test_string_from_invalid_utf8_bytes_errs() {
+        assert_eq!(
+            test_script("string(b'\\000\\xff')", None),
+            Err(crate::ExecutionError::FunctionError {
+                function: "string".to_string(),
+                message: "invalid utf-8 sequence of 1 bytes from index 1".to_string(),
+            })
+        );
+    }
+
+    #[test]
     fn test_bytes() {
         [
             ("string", "bytes('abc') == b'abc'"),
